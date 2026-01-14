@@ -9,4 +9,6 @@ import org.mapstruct.ReportingPolicy;
 public interface ResumeMapper {
 
     ResumeDto toDto(Resume entity);
+
+    Resume toEntity(ResumeDto dto);
 }
