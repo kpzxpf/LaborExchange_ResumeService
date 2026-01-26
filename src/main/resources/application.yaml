@@ -6,7 +6,7 @@ spring:
     name: resume-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5435/resumedb
+    url: jdbc:postgresql://localhost:5436/resumedb
     username: resumeuser
     password: resumepass
     driver-class-name: org.postgresql.Driver
@@ -22,6 +22,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+
+  logging:
+    level:
+      org.springframework.cloud.gateway: INFO
+      com.vlz: DEBUG
+
 
 kafka:
   bootstrap-servers: localhost:9092

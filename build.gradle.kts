@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.5.6"
+    id("org.springframework.boot") version "3.3.6"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -18,6 +18,13 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2023.0.3")
+    }
+}
+
+
 dependencies {
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -28,7 +35,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
 
     // Feign Client
-    implementation("org.springframework.cloud:spring-cloud-starter-openfeign:4.0.2")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
 
     // PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
@@ -44,6 +51,8 @@ dependencies {
     // MapStruct
     implementation("org.mapstruct:mapstruct:1.6.3")
     annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+
+    implementation("com.github.loki4j:loki-logback-appender:1.5.0")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
