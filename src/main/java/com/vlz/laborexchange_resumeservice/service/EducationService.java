@@ -2,8 +2,6 @@ package com.vlz.laborexchange_resumeservice.service;
 
 import com.vlz.laborexchange_resumeservice.dto.EducationDto;
 import com.vlz.laborexchange_resumeservice.entity.Education;
-import com.vlz.laborexchange_resumeservice.entity.Resume;
-import com.vlz.laborexchange_resumeservice.mapper.EducationMapper;
 import com.vlz.laborexchange_resumeservice.repository.EducationRepository;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,10 +28,14 @@ public class EducationService {
 
     @Transactional
     public Education create(EducationDto educationDto) {
-        Resume resume = resumeService.getById(educationDto.getResumeId());
-
-        Education education = getEducationById(educationDto.getId());
-        education.setResume(resume);
+        Education education = Education.builder()
+                .degree(educationDto.getDegree())
+                .institution(educationDto.getInstitution())
+                .fieldOfStudy(educationDto.getFieldOfStudy())
+                .startYear(educationDto.getStartDate())
+                .endYear(educationDto.getEndDate())
+                .resume(resumeService.getById(educationDto.getResumeId()))
+                .build();
 
         return educationRepository.save(education);
     }

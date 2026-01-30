@@ -27,10 +27,10 @@ public class EducationDto {
 
     @NotBlank(message = "startDate (year) is required")
     @Pattern(regexp = "^\\d{4}$", message = "startDate must be a 4-digit year")
-    private Integer startDate;
+    private Integer startYear;
 
     @Pattern(regexp = "^\\d{4}$", message = "endDate must be a 4-digit year")
-    private Integer endDate;
+    private Integer endYear;
 
     @NotNull(message = "resumeId is required")
     private Long resumeId;

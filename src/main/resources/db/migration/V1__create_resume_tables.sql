@@ -1,40 +1,42 @@
-CREATE TABLE resumes (
-                         id BIGSERIAL PRIMARY KEY,
-                         user_id BIGINT NOT NULL,
-                         title VARCHAR(255),
-                         summary TEXT,
-                         experience_years INT,
-                         contact_email VARCHAR(255),
-                         contact_phone VARCHAR(50),
-                         created_at TIMESTAMP DEFAULT NOW(),
-                         updated_at TIMESTAMP DEFAULT NOW()
+CREATE TABLE resumes
+(
+    id               BIGSERIAL PRIMARY KEY,
+    user_id          BIGINT       NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title            VARCHAR(255) NOT NULL,
+    summary          TEXT,
+    experience_years INT       DEFAULT 0,
+    contact_email    VARCHAR(255),
+    contact_phone    VARCHAR(50),
+    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE education (
-                           id BIGSERIAL PRIMARY KEY,
-                           resume_id BIGINT REFERENCES resumes(id) ON DELETE CASCADE,
-                           institution VARCHAR(255),
-                           degree VARCHAR(255),
-                           field_of_study VARCHAR(255),
-                           start_year INT,
-                           end_year INT
+CREATE INDEX idx_resumes_user_id ON resumes (user_id);
+
+CREATE TABLE education
+(
+    id             BIGSERIAL PRIMARY KEY,
+    resume_id      BIGINT       NOT NULL REFERENCES resumes (id) ON DELETE CASCADE,
+    institution    VARCHAR(255) NOT NULL,
+    degree         VARCHAR(255),
+    field_of_study VARCHAR(255),
+    start_year     INT          NOT NULL,
+    end_year       INT
 );
 
-CREATE TABLE skills (
-                        id BIGSERIAL PRIMARY KEY,
-                        resume_id BIGINT REFERENCES resumes(id) ON DELETE CASCADE,
-                        name VARCHAR(100)
+CREATE INDEX idx_education_resume_id ON education (resume_id);
+
+CREATE TABLE skills
+(
+    id        BIGSERIAL PRIMARY KEY,
+    resume_id BIGINT       NOT NULL REFERENCES resumes (id) ON DELETE CASCADE,
+    name      VARCHAR(100) NOT NULL
 );
 
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-   NEW.updated_at = NOW();
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+CREATE INDEX idx_skills_resume_id ON skills (resume_id);
 
-CREATE TRIGGER set_updated_at_resume
-    BEFORE UPDATE ON resumes
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
+ALTER TABLE education
+    ADD CONSTRAINT chk_education_years CHECK (end_year IS NULL OR end_year >= start_year);
+
+ALTER TABLE resumes
+    ADD CONSTRAINT chk_experience_positive CHECK (experience_years >= 0);

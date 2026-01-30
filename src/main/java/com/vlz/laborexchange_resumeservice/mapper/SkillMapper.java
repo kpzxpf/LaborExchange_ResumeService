@@ -11,5 +11,4 @@ public interface SkillMapper {
 
     @Mapping(target = "resumeId", source = "resume.id")
     SkillDto toDto(Skill entity);
-
 }
