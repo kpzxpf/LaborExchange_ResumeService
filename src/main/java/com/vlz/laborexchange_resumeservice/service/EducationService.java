@@ -3,10 +3,10 @@ package com.vlz.laborexchange_resumeservice.service;
 import com.vlz.laborexchange_resumeservice.dto.EducationDto;
 import com.vlz.laborexchange_resumeservice.entity.Education;
 import com.vlz.laborexchange_resumeservice.repository.EducationRepository;
-import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +18,6 @@ import java.util.List;
 public class EducationService {
 
     private final EducationRepository educationRepository;
-    private final ResumeRepository resumeRepository;
     private final ResumeService resumeService;
 
     @Transactional(readOnly = true)
@@ -32,8 +31,8 @@ public class EducationService {
                 .degree(educationDto.getDegree())
                 .institution(educationDto.getInstitution())
                 .fieldOfStudy(educationDto.getFieldOfStudy())
-                .startYear(educationDto.getStartDate())
-                .endYear(educationDto.getEndDate())
+                .startYear(educationDto.getStartYear())
+                .endYear(educationDto.getEndYear())
                 .resume(resumeService.getById(educationDto.getResumeId()))
                 .build();
 
@@ -47,8 +46,8 @@ public class EducationService {
         existing.setInstitution(educationDto.getInstitution());
         existing.setDegree(educationDto.getDegree());
         existing.setFieldOfStudy(educationDto.getFieldOfStudy());
-        existing.setStartYear(educationDto.getStartDate());
-        existing.setEndYear(educationDto.getEndDate());
+        existing.setStartYear(educationDto.getStartYear());
+        existing.setEndYear(educationDto.getEndYear());
 
         return educationRepository.save(existing);
     }

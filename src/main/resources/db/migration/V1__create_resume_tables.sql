@@ -7,6 +7,7 @@ CREATE TABLE resumes
     experience_years INT       DEFAULT 0,
     contact_email    VARCHAR(255),
     contact_phone    VARCHAR(50),
+    is_published BOOLEAN NOT NULL DEFAULT FALSE,
     created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

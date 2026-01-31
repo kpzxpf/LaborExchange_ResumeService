@@ -6,6 +6,8 @@ import com.vlz.laborexchange_resumeservice.mapper.ResumeMapper;
 import com.vlz.laborexchange_resumeservice.service.ResumeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +21,8 @@ public class ResumeController {
     private final ResumeMapper mapper;
 
     @GetMapping
-    public List<ResumeDto> getAll() {
-        return service.getAll().stream()
-                .map(mapper::toDto)
-                .toList();
+    public Page<ResumeDto> getAll(Pageable pageable) {
+        return service.getAll(pageable).map(mapper::toDto);
     }
 
     @GetMapping("/{id}")
@@ -42,6 +42,24 @@ public class ResumeController {
         Resume entity = mapper.toEntity(dto);
         Resume saved = service.create(entity);
         return mapper.toDto(saved);
+    }
+
+    @PostMapping("/update")
+    public ResumeDto update(@RequestBody @Valid ResumeDto resumeDto,
+                             @RequestHeader("X-User-Id") Long userId) {
+        return mapper.toDto(service.update(resumeDto, userId));
+    }
+
+    @PatchMapping("/{id}/publish")
+    public void publish(@PathVariable Long id,
+                        @RequestHeader("X-User-Id") Long userId) {
+        service.updatePublishStatus(id, userId, true);
+    }
+
+    @PatchMapping("/{id}/unpublish")
+    public void unpublish(@PathVariable Long id,
+                          @RequestHeader("X-User-Id") Long userId) {
+        service.updatePublishStatus(id, userId, false);
     }
 
     @DeleteMapping("/{id}")

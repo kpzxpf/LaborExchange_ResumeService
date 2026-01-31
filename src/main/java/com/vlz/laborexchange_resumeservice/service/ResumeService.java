@@ -2,27 +2,34 @@ package com.vlz.laborexchange_resumeservice.service;
 
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
 import com.vlz.laborexchange_resumeservice.entity.Resume;
-import com.vlz.laborexchange_resumeservice.mapper.ResumeMapper;
+import com.vlz.laborexchange_resumeservice.exception.InsufficientPermissionsException;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResumeService {
     private final ResumeRepository repository;
+    private final RoleRetryClient roleRetryClient;
+
+    @Value("${spring.resume-create.role}")
+    private String needRoleForCreate;
 
     @Transactional(readOnly = true)
-    public List<Resume> getAll() {
-        return repository.findAll();
+    public Page<Resume> getAll(Pageable pageable) {
+        return repository.findAllByIsPublishedTrue(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -40,6 +47,23 @@ public class ResumeService {
 
     @Transactional
     public Resume create(Resume resume) {
+        checkForRequiredRole(resume.getUserId());
+
+        return repository.save(resume);
+    }
+
+    @Transactional
+    public Resume update(@Valid ResumeDto resumeDto, Long userId) {
+        Resume resume = getById(resumeDto.getId());
+
+        validateOwnership(resume.getUserId(), userId);
+
+        resume.setTitle(resumeDto.getTitle());
+        resume.setContactEmail(resumeDto.getContactEmail());
+        resume.setContactPhone(resumeDto.getContactPhone());
+        resume.setExperienceYears(resumeDto.getExperienceYears());
+        resume.setSummary(resumeDto.getSummary());
+
         return repository.save(resume);
     }
 
@@ -49,5 +73,36 @@ public class ResumeService {
             throw new EntityNotFoundException("Resume with id " + id + " not found");
         }
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public void updatePublishStatus(Long id, Long userId, boolean status) {
+        Resume resume = getById(id);
+
+        validateOwnership(resume.getUserId(), userId);
+
+        if (!resume.getIsPublished()) {
+            log.error("id {} not published", id);
+            throw new InsufficientPermissionsException("This resume is private");
+        }
+        resume.setIsPublished(status);
+    }
+
+    private void checkForRequiredRole(Long userId) {
+        String userRole = roleRetryClient.getUserRoleById(userId);
+
+        if (!needRoleForCreate.equals(userRole)) {
+            log.error("User {} tried to create a new Vacancy", userRole);
+            throw new InsufficientPermissionsException(
+                    "Only users with EMPLOYER role can create vacancies. Current role: " + userRole
+            );
+        }
+    }
+
+    private void validateOwnership(Long resumeUserId, Long userId) {
+        if (!resumeUserId.equals(userId)) {
+            log.error("Access denied: User {} is not owner of vacancy", userId);
+            throw new InsufficientPermissionsException("You can only edit your own vacancies");
+        }
     }
 }

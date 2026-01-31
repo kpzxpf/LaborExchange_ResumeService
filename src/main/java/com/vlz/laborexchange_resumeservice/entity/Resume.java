@@ -38,6 +38,9 @@ public class Resume {
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Skill> skills;
 
+    @Column(name = "is_published", nullable = false)
+    private Boolean isPublished = false;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;
