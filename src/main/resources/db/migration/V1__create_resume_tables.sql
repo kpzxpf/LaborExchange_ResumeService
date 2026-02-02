@@ -1,7 +1,7 @@
 CREATE TABLE resumes
 (
     id               BIGSERIAL PRIMARY KEY,
-    user_id          BIGINT       NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    user_id          BIGINT       NOT NULL,
     title            VARCHAR(255) NOT NULL,
     summary          TEXT,
     experience_years INT       DEFAULT 0,
