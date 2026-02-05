@@ -5,8 +5,6 @@ import com.vlz.laborexchange_resumeservice.entity.Resume;
 import com.vlz.laborexchange_resumeservice.exception.InsufficientPermissionsException;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,7 +51,7 @@ public class ResumeService {
     }
 
     @Transactional
-    public Resume update(@Valid ResumeDto resumeDto, Long userId) {
+    public Resume update(ResumeDto resumeDto, Long userId) {
         Resume resume = getById(resumeDto.getId());
 
         validateOwnership(resume.getUserId(), userId);
