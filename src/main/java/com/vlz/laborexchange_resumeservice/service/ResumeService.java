@@ -76,13 +76,8 @@ public class ResumeService {
     @Transactional
     public void updatePublishStatus(Long id, Long userId, boolean status) {
         Resume resume = getById(id);
-
         validateOwnership(resume.getUserId(), userId);
 
-        if (!resume.getIsPublished()) {
-            log.error("id {} not published", id);
-            throw new InsufficientPermissionsException("This resume is private");
-        }
         resume.setIsPublished(status);
     }
 
