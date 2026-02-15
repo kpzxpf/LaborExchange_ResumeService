@@ -1,6 +1,7 @@
 package com.vlz.laborexchange_resumeservice.dto;
 
 import jakarta.validation.constraints.*;
+import jdk.jfr.BooleanFlag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,6 +30,9 @@ public class ResumeDto {
     @Email(message = "contactEmail must be a valid email address")
     @Size(max = 320, message = "contactEmail must be at most 320 characters")
     private String contactEmail;
+
+    @BooleanFlag
+    private Boolean isPublished;
 
     @Pattern(regexp = "^[+]?[- 0-9()]{7,20}$", message = "contactPhone must be a valid phone number")
     @Size(max = 20, message = "contactPhone must be at most 20 characters")

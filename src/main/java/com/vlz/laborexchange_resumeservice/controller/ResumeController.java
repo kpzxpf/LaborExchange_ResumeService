@@ -1,7 +1,6 @@
 package com.vlz.laborexchange_resumeservice.controller;
 
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
-import com.vlz.laborexchange_resumeservice.entity.Resume;
 import com.vlz.laborexchange_resumeservice.mapper.ResumeMapper;
 import com.vlz.laborexchange_resumeservice.service.ResumeService;
 import jakarta.validation.Valid;
@@ -39,9 +38,8 @@ public class ResumeController {
 
     @PostMapping
     public ResumeDto create(@Valid @RequestBody ResumeDto dto) {
-        Resume entity = mapper.toEntity(dto);
-        Resume saved = service.create(entity);
-        return mapper.toDto(saved);
+
+        return mapper.toDto(service.create(dto));
     }
 
     @PostMapping("/update")

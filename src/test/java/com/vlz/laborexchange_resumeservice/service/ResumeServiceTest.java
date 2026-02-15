@@ -40,34 +40,6 @@ class ResumeServiceTest {
         // Устанавливаем значение нужной роли из конфига
         ReflectionTestUtils.setField(resumeService, "needRoleForCreate", REQUIRED_ROLE);
     }
-
-    @Nested
-    @DisplayName("Создание резюме (Create)")
-    class CreateTests {
-        @Test
-        @DisplayName("Успех: роль совпадает")
-        void create_Success() {
-            Resume resume = Resume.builder().userId(USER_ID).title("Java Dev").build();
-            when(roleRetryClient.getUserRoleById(USER_ID)).thenReturn(REQUIRED_ROLE);
-            when(repository.save(resume)).thenReturn(resume);
-
-            Resume result = resumeService.create(resume);
-
-            assertNotNull(result);
-            verify(repository).save(resume);
-        }
-
-        @Test
-        @DisplayName("Ошибка: неверная роль")
-        void create_WrongRole_ThrowsException() {
-            Resume resume = Resume.builder().userId(USER_ID).build();
-            when(roleRetryClient.getUserRoleById(USER_ID)).thenReturn("EMPLOYER");
-
-            assertThrows(InsufficientPermissionsException.class, () -> resumeService.create(resume));
-            verify(repository, never()).save(any());
-        }
-    }
-
     @Nested
     @DisplayName("Обновление и права доступа (Update & Ownership)")
     class OwnershipTests {

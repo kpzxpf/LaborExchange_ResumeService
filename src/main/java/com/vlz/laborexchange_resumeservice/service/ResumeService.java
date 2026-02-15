@@ -44,8 +44,17 @@ public class ResumeService {
     }
 
     @Transactional
-    public Resume create(Resume resume) {
-        checkForRequiredRole(resume.getUserId());
+    public Resume create(ResumeDto resumeDto) {
+        checkForRequiredRole(resumeDto.getUserId());
+        Resume resume = Resume.builder()
+                .title(resumeDto.getTitle())
+                .userId(resumeDto.getUserId())
+                .summary(resumeDto.getSummary())
+                .experienceYears(resumeDto.getExperienceYears())
+                .contactEmail(resumeDto.getContactEmail())
+                .contactPhone(resumeDto.getContactPhone())
+                .isPublished(true)
+                .build();
 
         return repository.save(resume);
     }

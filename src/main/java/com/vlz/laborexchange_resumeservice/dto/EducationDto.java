@@ -25,11 +25,13 @@ public class EducationDto {
     @Size(max = 255, message = "fieldOfStudy must be at most 255 characters")
     private String fieldOfStudy;
 
-    @NotBlank(message = "startDate (year) is required")
-    @Pattern(regexp = "^\\d{4}$", message = "startDate must be a 4-digit year")
+    @NotNull(message = "startDate (year) is required")
+    @Min(1900)
+    @Max(2100)
     private Integer startYear;
 
-    @Pattern(regexp = "^\\d{4}$", message = "endDate must be a 4-digit year")
+    @Min(1900)
+    @Max(2100)
     private Integer endYear;
 
     @NotNull(message = "resumeId is required")
