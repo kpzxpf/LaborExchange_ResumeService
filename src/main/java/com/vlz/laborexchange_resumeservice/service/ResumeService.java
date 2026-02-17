@@ -90,6 +90,11 @@ public class ResumeService {
         resume.setIsPublished(status);
     }
 
+    @Transactional(readOnly = true)
+    public String getResumeTitle(Long id) {
+        return repository.findResumeTitleByResumeId(id);
+    }
+
     private void checkForRequiredRole(Long userId) {
         String userRole = roleRetryClient.getUserRoleById(userId);
 

@@ -36,6 +36,11 @@ public class ResumeController {
                 .toList();
     }
 
+    @GetMapping("/{id}/title")
+    public String getResumeTitle(@PathVariable Long id) {
+        return service.getResumeTitle(id);
+    }
+
     @PostMapping
     public ResumeDto create(@Valid @RequestBody ResumeDto dto) {
 
