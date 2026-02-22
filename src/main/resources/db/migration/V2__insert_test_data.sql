@@ -40,60 +40,32 @@ VALUES (1, 'Java Developer Middle', 3, true),
        (19, 'Finance Analyst', 5, true),
        (20, 'System Analyst', 3, true);
 
-INSERT INTO skills (resume_id, name)
-VALUES (1, 'Java'),
-       (1, 'Spring Boot'),
-       (1, 'PostgreSQL'),
-       (21, 'Kotlin'),
-       (21, 'Coroutines'),
-       (2, 'C++'),
-       (2, 'STL'),
-       (2, 'Multithreading'),
-       (22, 'Embedded C'),
-       (22, 'RTOS'),
-       (3, 'React'),
-       (3, 'TypeScript'),
-       (3, 'CSS3'),
-       (23, 'JavaScript'),
-       (23, 'Vue.js'),
-       (4, 'Python'),
-       (4, 'Django'),
-       (4, 'Docker'),
-       (24, 'Pandas'),
-       (24, 'Scikit-learn'),
-       (5, 'Golang'),
-       (5, 'gRPC'),
-       (25, 'Kubernetes'),
-       (25, 'AWS'),
-       (6, 'Swift'),
-       (6, 'SwiftUI'),
-       (26, 'Combine'),
-       (36, 'Kotlin'),
-       (36, 'Android SDK'),
-       (7, 'Network Security'),
-       (7, 'SIEM'),
-       (27, 'CISM'),
-       (33, 'Penetration Testing'),
-       (8, 'SQL'),
-       (8, 'Tableau'),
-       (20, 'BPMN'),
-       (20, 'UML'),
-       (40, 'System Analysis'),
-       (9, 'Terraform'),
-       (9, 'Ansible'),
-       (29, 'Prometheus'),
-       (32, 'CI/CD'),
-       (10, 'Selenium'),
-       (10, 'JUnit'),
-       (30, 'PyTest'),
-       (29, 'API Testing'),
-       (11, 'Agile'),
-       (11, 'Scrum'),
-       (31, 'Product Roadmap'),
-       (14, 'Jira'),
-       (17, 'Figma'),
-       (17, 'Adobe XD'),
-       (37, 'Prototyping');
+INSERT INTO resume_skills (resume_id, skill_id) VALUES
+-- Java Dev (Resume 1) + Kotlin (Resume 21)
+(1, 1), (1, 2), (1, 3),
+(21, 4), (21, 5),
+-- C++ (Resume 2) + Embedded (Resume 22)
+(2, 6), (2, 7), (2, 8),
+(22, 9), (22, 10),
+-- Frontend (Resume 3) + JS Dev (Resume 23)
+(3, 11), (3, 12), (3, 13),
+(23, 14), (23, 15),
+-- Python (Resume 4) + Data Science (Resume 24)
+(4, 16), (4, 17), (4, 18),
+(24, 19), (24, 20),
+-- Go (Resume 5) + Cloud (Resume 25)
+(5, 21), (5, 22),
+(25, 23), (25, 24),
+-- iOS (Resume 6, 26) + Android (Resume 36)
+(6, 25), (6, 26),
+(26, 27),
+(36, 4), (36, 28),
+-- QA (Resume 10, 30)
+(10, 16), (10, 29), -- Python, SQL
+(30, 16), (30, 18), -- Python, Docker
+-- DevOps/SRE (Resume 9, 29)
+(9, 30), (9, 18),   -- Terraform, Docker
+(29, 23), (29, 18); -- K8s, Docker
 
 INSERT INTO education (resume_id, institution, degree, field_of_study, start_year, end_year)
 VALUES (1, 'МГТУ им. Н.Э. Баумана', 'Бакалавр', 'Информатика и системы управления', 2016, 2020),

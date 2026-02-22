@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -88,6 +90,42 @@ public class ResumeService {
         validateOwnership(resume.getUserId(), userId);
 
         resume.setIsPublished(status);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<Long> getSkillIds(Long resumeId) {
+        Resume resume = getById(resumeId);
+        return resume.getSkillIds() != null ? resume.getSkillIds() : new HashSet<>();
+    }
+
+    @Transactional
+    public void addSkill(Long resumeId, Long skillId, Long userId) {
+        Resume resume = getById(resumeId);
+        validateOwnership(resume.getUserId(), userId);
+
+        if (resume.getSkillIds() == null) {
+            resume.setSkillIds(new HashSet<>());
+        }
+        resume.getSkillIds().add(skillId);
+        repository.save(resume);
+    }
+
+    @Transactional
+    public void removeSkill(Long resumeId, Long skillId, Long userId) {
+        Resume resume = getById(resumeId);
+        validateOwnership(resume.getUserId(), userId);
+        if (resume.getSkillIds() != null) {
+            resume.getSkillIds().remove(skillId);
+        }
+        repository.save(resume);
+    }
+
+    @Transactional
+    public void updateSkills(Long resumeId, Set<Long> skillIds, Long userId) {
+        Resume resume = getById(resumeId);
+        validateOwnership(resume.getUserId(), userId);
+        resume.setSkillIds(skillIds != null ? skillIds : new HashSet<>());
+        repository.save(resume);
     }
 
     @Transactional(readOnly = true)

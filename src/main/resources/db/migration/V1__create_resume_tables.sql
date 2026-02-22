@@ -4,12 +4,12 @@ CREATE TABLE resumes
     user_id          BIGINT       NOT NULL,
     title            VARCHAR(255) NOT NULL,
     summary          TEXT,
-    experience_years INT       DEFAULT 0,
+    experience_years INT                   DEFAULT 0,
     contact_email    VARCHAR(255),
     contact_phone    VARCHAR(50),
-    is_published BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    is_published     BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at       TIMESTAMP             DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP             DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_resumes_user_id ON resumes (user_id);
@@ -27,11 +27,11 @@ CREATE TABLE education
 
 CREATE INDEX idx_education_resume_id ON education (resume_id);
 
-CREATE TABLE skills
+CREATE TABLE resume_skills
 (
-    id        BIGSERIAL PRIMARY KEY,
-    resume_id BIGINT       NOT NULL REFERENCES resumes (id) ON DELETE CASCADE,
-    name      VARCHAR(100) NOT NULL
+    resume_id BIGINT NOT NULL REFERENCES resumes (id) ON DELETE CASCADE,
+    skill_id  BIGINT NOT NULL,
+    PRIMARY KEY (resume_id, skill_id)
 );
 
 CREATE INDEX idx_skills_resume_id ON skills (resume_id);

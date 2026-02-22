@@ -35,8 +35,10 @@ public class Resume {
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Education> education;
 
-    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Skill> skills;
+    @ElementCollection
+    @CollectionTable(name = "resume_skills", joinColumns = @JoinColumn(name = "resume_id"))
+    @Column(name = "skill_id")
+    private Set<Long> skillIds;
 
     @Column(name = "is_published", nullable = false)
     private Boolean isPublished = false;

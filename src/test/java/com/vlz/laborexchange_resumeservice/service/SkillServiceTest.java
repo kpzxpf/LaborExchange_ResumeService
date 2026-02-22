@@ -3,10 +3,7 @@ package com.vlz.laborexchange_resumeservice.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.vlz.laborexchange_resumeservice.dto.SkillDto;
 import com.vlz.laborexchange_resumeservice.entity.Resume;
-import com.vlz.laborexchange_resumeservice.entity.Skill;
-import com.vlz.laborexchange_resumeservice.repository.SkillRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
