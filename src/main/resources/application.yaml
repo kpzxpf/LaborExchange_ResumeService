@@ -5,6 +5,11 @@ spring:
   application:
     name: resume-service
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    topics:
+      indexing-vacancy: indexing-resume
+
   datasource:
     url: jdbc:postgresql://localhost:5436/resumedb
     username: resumeuser
@@ -23,6 +28,9 @@ spring:
     user-service:
       name: user-service
       url: http://localhost:8082
+    skill-service:
+      name: skill-service
+      url: http://localhost:8086
 
   retry:
     max-attempts: 3

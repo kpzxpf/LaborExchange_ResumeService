@@ -3,8 +3,11 @@ package com.vlz.laborexchange_resumeservice.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -13,10 +16,13 @@ import java.util.Set;
 
 @Entity
 @Table(name = "resumes")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = "education")
 public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

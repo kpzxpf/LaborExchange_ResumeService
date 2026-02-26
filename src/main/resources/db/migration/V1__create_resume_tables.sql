@@ -34,7 +34,6 @@ CREATE TABLE resume_skills
     PRIMARY KEY (resume_id, skill_id)
 );
 
-CREATE INDEX idx_skills_resume_id ON skills (resume_id);
 
 ALTER TABLE education
     ADD CONSTRAINT chk_education_years CHECK (end_year IS NULL OR end_year >= start_year);

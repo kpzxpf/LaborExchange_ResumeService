@@ -48,9 +48,18 @@ public class ResumeController {
         return mapper.toDto(service.create(dto));
     }
 
-    @PostMapping("/update")
-    public ResumeDto update(@RequestBody @Valid ResumeDto resumeDto,
+    @GetMapping("/my")
+    public List<ResumeDto> getMy(@RequestHeader("X-User-Id") Long userId) {
+        return service.getByUserId(userId).stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    @PutMapping("/{id}")
+    public ResumeDto update(@PathVariable Long id,
+                             @RequestBody @Valid ResumeDto resumeDto,
                              @RequestHeader("X-User-Id") Long userId) {
+        resumeDto.setId(id);
         return mapper.toDto(service.update(resumeDto, userId));
     }
 
@@ -96,5 +105,10 @@ public class ResumeController {
                              @RequestBody Set<Long> skillIds,
                              @RequestHeader("X-User-Id") Long userId) {
         service.updateSkills(id, skillIds, userId);
+    }
+
+    @PostMapping("/reindex")
+    public void reindex() {
+        service.reindexAll();
     }
 }

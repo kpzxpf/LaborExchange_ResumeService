@@ -14,6 +14,7 @@ import java.util.List;
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
     List<Resume> findAllByUserId(Long userId);
     Page<Resume> findAllByIsPublishedTrue(Pageable pageable);
+    List<Resume> findAllByIsPublishedTrue();
 
     @Query("SELECT r.title FROM Resume r WHERE r.id = :resumeId")
     String findResumeTitleByResumeId(@Param("resumeId") Long resumeId);

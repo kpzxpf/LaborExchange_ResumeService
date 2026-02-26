@@ -1,8 +1,10 @@
 package com.vlz.laborexchange_resumeservice.service;
 
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
+import com.vlz.laborexchange_resumeservice.dto.ResumeIndexEvent;
 import com.vlz.laborexchange_resumeservice.entity.Resume;
 import com.vlz.laborexchange_resumeservice.exception.InsufficientPermissionsException;
+import com.vlz.laborexchange_resumeservice.producer.ResumeIndexProducer;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -23,6 +26,8 @@ import java.util.Set;
 public class ResumeService {
     private final ResumeRepository repository;
     private final RoleRetryClient roleRetryClient;
+    private final ResumeIndexProducer resumeIndexProducer;
+    private final SkillRetryClient skillRetryClient;
 
     @Value("${spring.resume-create.role}")
     private String needRoleForCreate;
@@ -58,7 +63,16 @@ public class ResumeService {
                 .isPublished(true)
                 .build();
 
-        return repository.save(resume);
+        Resume savedResume = repository.save(resume);
+        resumeIndexProducer.send(ResumeIndexEvent.builder()
+                .id(resume.getId())
+                .title(resume.getTitle())
+                .summary(resume.getSummary())
+                .experienceYears(resume.getExperienceYears())
+                .skills(skillRetryClient.getNameSkillsByIds(List.copyOf(resume.getSkillIds())))
+                .build());
+
+        return savedResume;
     }
 
     @Transactional
@@ -73,7 +87,23 @@ public class ResumeService {
         resume.setExperienceYears(resumeDto.getExperienceYears());
         resume.setSummary(resumeDto.getSummary());
 
-        return repository.save(resume);
+        Resume saved = repository.save(resume);
+
+        Set<String> institutions = saved.getEducation() != null
+                ? saved.getEducation().stream().map(e -> e.getInstitution()).collect(Collectors.toSet())
+                : Set.of();
+
+        resumeIndexProducer.send(ResumeIndexEvent.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .summary(saved.getSummary())
+                .experienceYears(saved.getExperienceYears())
+                .skills(skillRetryClient.getNameSkillsByIds(
+                        List.copyOf(saved.getSkillIds() != null ? saved.getSkillIds() : new HashSet<>())))
+                .institutions(institutions)
+                .build());
+
+        return saved;
     }
 
     @Transactional
@@ -125,7 +155,42 @@ public class ResumeService {
         Resume resume = getById(resumeId);
         validateOwnership(resume.getUserId(), userId);
         resume.setSkillIds(skillIds != null ? skillIds : new HashSet<>());
-        repository.save(resume);
+        Resume saved = repository.save(resume);
+
+        Set<String> institutions = saved.getEducation() != null
+                ? saved.getEducation().stream().map(e -> e.getInstitution()).collect(Collectors.toSet())
+                : Set.of();
+
+        resumeIndexProducer.send(ResumeIndexEvent.builder()
+                .id(saved.getId())
+                .title(saved.getTitle())
+                .summary(saved.getSummary())
+                .experienceYears(saved.getExperienceYears())
+                .skills(skillRetryClient.getNameSkillsByIds(List.copyOf(saved.getSkillIds())))
+                .institutions(institutions)
+                .build());
+    }
+
+    @Transactional(readOnly = true)
+    public void reindexAll() {
+        List<Resume> resumes = repository.findAllByIsPublishedTrue();
+        log.info("Reindexing {} resumes", resumes.size());
+
+        resumes.forEach(resume -> {
+            Set<String> institutions = resume.getEducation() != null
+                    ? resume.getEducation().stream().map(e -> e.getInstitution()).collect(Collectors.toSet())
+                    : Set.of();
+
+            resumeIndexProducer.send(ResumeIndexEvent.builder()
+                    .id(resume.getId())
+                    .title(resume.getTitle())
+                    .summary(resume.getSummary())
+                    .experienceYears(resume.getExperienceYears())
+                    .skills(skillRetryClient.getNameSkillsByIds(
+                            List.copyOf(resume.getSkillIds() != null ? resume.getSkillIds() : new HashSet<>())))
+                    .institutions(institutions)
+                    .build());
+        });
     }
 
     @Transactional(readOnly = true)

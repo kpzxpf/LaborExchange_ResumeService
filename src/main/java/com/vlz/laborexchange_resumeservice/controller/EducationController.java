@@ -34,6 +34,12 @@ public class EducationController {
         return ResponseEntity.ok(mapper.toDto(updated));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        educationService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/resume/{resumeId}")
     public ResponseEntity<List<EducationDto>> getByResume(@PathVariable Long resumeId) {
         List<Education> list = educationService.getByResumeId(resumeId);
