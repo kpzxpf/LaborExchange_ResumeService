@@ -8,13 +8,21 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topics:
-      indexing-vacancy: indexing-resume
+      indexing-resume: indexing-resume
 
   datasource:
     url: jdbc:postgresql://localhost:5436/resumedb
     username: resumeuser
     password: resumepass
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      pool-name: HikariPool-ResumeService
+      leak-detection-threshold: 0
 
   jpa:
     hibernate:
@@ -23,6 +31,13 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          batch_size: 25
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        generate_statistics: false
 
   clients:
     user-service:
@@ -48,6 +63,69 @@ spring:
       org.springframework.cloud.gateway: INFO
       com.vlz: DEBUG
 
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+    display-request-duration: true
+  api-docs:
+    path: /v3/api-docs
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+    instances:
+      userService:
+        baseConfig: default
+      vacancyService:
+        baseConfig: default
+        waitDurationInOpenState: 15s
+      resumeService:
+        baseConfig: default
+      skillService:
+        baseConfig: default
+      companyService:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
+        cancelRunningFuture: true
+    instances:
+      userService:
+        baseConfig: default
+      vacancyService:
+        timeoutDuration: 5s
+      resumeService:
+        baseConfig: default
+      skillService:
+        timeoutDuration: 2s
+
+  retry:
+    configs:
+      default:
+        maxAttempts: 3
+        waitDuration: 500ms
+        retryExceptions:
+          - feign.FeignException.ServiceUnavailable
+          - java.net.ConnectException
+    instances:
+      userService:
+        baseConfig: default
+      vacancyService:
+        baseConfig: default
+
 
 kafka:
   bootstrap-servers: localhost:9092
@@ -55,4 +133,17 @@ kafka:
 clients:
   user-service:
     url: http://localhost:8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 

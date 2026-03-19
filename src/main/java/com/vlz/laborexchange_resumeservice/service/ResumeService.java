@@ -60,16 +60,17 @@ public class ResumeService {
                 .experienceYears(resumeDto.getExperienceYears())
                 .contactEmail(resumeDto.getContactEmail())
                 .contactPhone(resumeDto.getContactPhone())
-                .isPublished(true)
+                .isPublished(resumeDto.getIsPublished() != null ? resumeDto.getIsPublished() : true)
                 .build();
 
         Resume savedResume = repository.save(resume);
         resumeIndexProducer.send(ResumeIndexEvent.builder()
-                .id(resume.getId())
-                .title(resume.getTitle())
-                .summary(resume.getSummary())
-                .experienceYears(resume.getExperienceYears())
-                .skills(skillRetryClient.getNameSkillsByIds(List.copyOf(resume.getSkillIds())))
+                .id(savedResume.getId())
+                .title(savedResume.getTitle())
+                .summary(savedResume.getSummary())
+                .experienceYears(savedResume.getExperienceYears())
+                .skills(skillRetryClient.getNameSkillsByIds(
+                        savedResume.getSkillIds() != null ? List.copyOf(savedResume.getSkillIds()) : List.of()))
                 .build());
 
         return savedResume;
@@ -107,10 +108,9 @@ public class ResumeService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Resume with id " + id + " not found");
-        }
+    public void delete(Long id, Long userId) {
+        Resume resume = getById(id);
+        validateOwnership(resume.getUserId(), userId);
         repository.deleteById(id);
     }
 
@@ -120,6 +120,7 @@ public class ResumeService {
         validateOwnership(resume.getUserId(), userId);
 
         resume.setIsPublished(status);
+        repository.save(resume);
     }
 
     @Transactional(readOnly = true)
@@ -166,7 +167,7 @@ public class ResumeService {
                 .title(saved.getTitle())
                 .summary(saved.getSummary())
                 .experienceYears(saved.getExperienceYears())
-                .skills(skillRetryClient.getNameSkillsByIds(List.copyOf(saved.getSkillIds())))
+                .skills(skillRetryClient.getNameSkillsByIds(List.copyOf(saved.getSkillIds() != null ? saved.getSkillIds() : new HashSet<>())))
                 .institutions(institutions)
                 .build());
     }
@@ -202,17 +203,17 @@ public class ResumeService {
         String userRole = roleRetryClient.getUserRoleById(userId);
 
         if (!needRoleForCreate.equals(userRole)) {
-            log.error("User {} tried to create a new Vacancy", userRole);
+            log.error("User {} tried to create a new Resume", userRole);
             throw new InsufficientPermissionsException(
-                    "Only users with EMPLOYER role can create vacancies. Current role: " + userRole
+                    "Only users with JOBSEEKER role can create resumes. Current role: " + userRole
             );
         }
     }
 
     private void validateOwnership(Long resumeUserId, Long userId) {
         if (!resumeUserId.equals(userId)) {
-            log.error("Access denied: User {} is not owner of vacancy", userId);
-            throw new InsufficientPermissionsException("You can only edit your own vacancies");
+            log.error("Access denied: User {} is not owner of resume", userId);
+            throw new InsufficientPermissionsException("You can only edit your own resumes");
         }
     }
 }

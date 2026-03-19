@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResumeIndexProducer extends AbstractProducer<ResumeIndexEvent> {
 
-    @Value("${spring.kafka.topics.indexing-vacancy}")
-    private String vacancyIndexTopicName;
+    @Value("${spring.kafka.topics.indexing-resume}")
+    private String resumeIndexTopicName;
 
     public ResumeIndexProducer(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         super(kafkaTemplate, objectMapper);
     }
 
     public void send(ResumeIndexEvent event) {
-        super.sendMessage(vacancyIndexTopicName, event);
-        log.info("Sending user registration event: {}", event);
+        super.sendMessage(resumeIndexTopicName, event);
+        log.info("Sending resume index event: {}", event);
     }
 }
