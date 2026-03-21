@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
-@Tag(name = "Resumes", description = "Resume management")
+@Tag(name = "Resumes", description = "Resume CRUD, skill management, and publish control")
 @RestController
 @RequestMapping("/api/resumes")
 @RequiredArgsConstructor
@@ -63,6 +64,7 @@ public class ResumeController {
         return service.getResumeTitle(id);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(
             summary = "Create a resume",
             description = "Only users with `JOB_SEEKER` role may create resumes. Role is verified via UserService. Publishes a ResumeIndexEvent to Kafka."
@@ -77,6 +79,7 @@ public class ResumeController {
         return mapper.toDto(service.create(dto));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Get my resumes", description = "Returns all resumes for the authenticated user (X-User-Id).")
     @ApiResponse(responseCode = "200", description = "List of resumes", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ResumeDto.class))))
     @GetMapping("/my")
@@ -86,6 +89,7 @@ public class ResumeController {
         return service.getByUserId(userId).stream().map(mapper::toDto).toList();
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Update a resume", description = "Only the resume owner may update. Re-indexes in Elasticsearch.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated resume", content = @Content(schema = @Schema(implementation = ResumeDto.class))),
@@ -102,6 +106,7 @@ public class ResumeController {
         return mapper.toDto(service.update(resumeDto, userId));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Publish a resume", description = "Makes the resume visible in public search. Owner only.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Published"),
@@ -115,6 +120,7 @@ public class ResumeController {
         service.updatePublishStatus(id, userId, true);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Unpublish a resume")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Unpublished"),
@@ -128,6 +134,7 @@ public class ResumeController {
         service.updatePublishStatus(id, userId, false);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Delete a resume", description = "Owner only.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Deleted"),
@@ -150,6 +157,7 @@ public class ResumeController {
         return service.getSkillIds(id);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Add a skill to a resume")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Skill added"),
@@ -164,6 +172,7 @@ public class ResumeController {
         service.addSkill(id, skillId, userId);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Remove a skill from a resume")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Skill removed"),
@@ -178,6 +187,7 @@ public class ResumeController {
         service.removeSkill(id, skillId, userId);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Replace all skills on a resume", description = "Re-indexes the resume in Elasticsearch after update.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Skills updated"),

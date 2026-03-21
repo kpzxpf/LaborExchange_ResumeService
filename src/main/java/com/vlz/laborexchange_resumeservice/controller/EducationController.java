@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class EducationController {
     private final EducationService educationService;
     private final EducationMapper mapper;
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Add education record to a resume")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Education record created", content = @Content(schema = @Schema(implementation = EducationDto.class))),
@@ -41,6 +43,7 @@ public class EducationController {
         return new ResponseEntity<>(mapper.toDto(saved), HttpStatus.CREATED);
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Update education record")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Updated", content = @Content(schema = @Schema(implementation = EducationDto.class))),
@@ -55,6 +58,7 @@ public class EducationController {
         return ResponseEntity.ok(mapper.toDto(updated));
     }
 
+    @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Delete education record")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Deleted"),
