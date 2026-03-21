@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
 import com.vlz.laborexchange_resumeservice.entity.Resume;
 import com.vlz.laborexchange_resumeservice.exception.InsufficientPermissionsException;
+import com.vlz.laborexchange_resumeservice.producer.ResumeIndexProducer;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,10 @@ class ResumeServiceTest {
     private ResumeRepository repository;
     @Mock
     private RoleRetryClient roleRetryClient;
+    @Mock
+    private ResumeIndexProducer resumeIndexProducer;
+    @Mock
+    private SkillRetryClient skillRetryClient;
 
     @InjectMocks
     private ResumeService resumeService;
@@ -37,9 +42,9 @@ class ResumeServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Устанавливаем значение нужной роли из конфига
         ReflectionTestUtils.setField(resumeService, "needRoleForCreate", REQUIRED_ROLE);
     }
+
     @Nested
     @DisplayName("Обновление и права доступа (Update & Ownership)")
     class OwnershipTests {
@@ -61,7 +66,7 @@ class ResumeServiceTest {
         @Test
         @DisplayName("Ошибка: попытка обновить чужое резюме")
         void update_NotOwner_ThrowsException() {
-            Resume existing = Resume.builder().id(RESUME_ID).userId(USER_ID).build(); // Владелец 1
+            Resume existing = Resume.builder().id(RESUME_ID).userId(USER_ID).build();
             ResumeDto dto = ResumeDto.builder().id(RESUME_ID).build();
 
             when(repository.findById(RESUME_ID)).thenReturn(Optional.of(existing));
@@ -73,8 +78,8 @@ class ResumeServiceTest {
     @Test
     @DisplayName("Удаление: выброс исключения если резюме нет")
     void delete_NotFound_ThrowsException() {
-        when(repository.existsById(RESUME_ID)).thenReturn(false);
+        when(repository.findById(RESUME_ID)).thenReturn(Optional.empty());
 
-        assertThrows(EntityNotFoundException.class, () -> resumeService.delete(RESUME_ID));
+        assertThrows(EntityNotFoundException.class, () -> resumeService.delete(RESUME_ID, USER_ID));
     }
 }

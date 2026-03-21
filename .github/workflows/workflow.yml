@@ -18,7 +18,7 @@ jobs:
           POSTGRES_USER: resumeuser
           POSTGRES_PASSWORD: resumepass
         ports:
-          - 5434:5432
+          - 5436:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
