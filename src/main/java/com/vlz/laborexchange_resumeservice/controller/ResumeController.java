@@ -1,7 +1,10 @@
 package com.vlz.laborexchange_resumeservice.controller;
 
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
+import com.vlz.laborexchange_resumeservice.dto.ResumeViewEvent;
 import com.vlz.laborexchange_resumeservice.mapper.ResumeMapper;
+import com.vlz.laborexchange_resumeservice.producer.ResumeViewProducer;
+import com.vlz.laborexchange_resumeservice.service.ResumePdfService;
 import com.vlz.laborexchange_resumeservice.service.ResumeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,6 +19,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +35,8 @@ public class ResumeController {
 
     private final ResumeService service;
     private final ResumeMapper mapper;
+    private final ResumePdfService pdfService;
+    private final ResumeViewProducer viewProducer;
 
     @Operation(summary = "Get all published resumes (paginated)")
     @ApiResponse(responseCode = "200", description = "Page of published resumes")
@@ -44,8 +52,23 @@ public class ResumeController {
     })
     @GetMapping("/{id}")
     public ResumeDto getById(
-            @Parameter(description = "Resume ID", required = true) @PathVariable Long id) {
-        return mapper.toDto(service.getById(id));
+            @Parameter(description = "Resume ID", required = true) @PathVariable Long id,
+            @Parameter(description = "Viewer user ID from Gateway") @RequestHeader(value = "X-User-Id", required = false) Long viewerId,
+            @Parameter(description = "Viewer role from Gateway") @RequestHeader(value = "X-User-Role", required = false) String viewerRole) {
+        ResumeDto dto = mapper.toDto(service.getById(id));
+        try {
+            viewProducer.send(ResumeViewEvent.builder()
+                    .resumeId(id)
+                    .resumeTitle(dto.getTitle())
+                    .ownerId(dto.getUserId())
+                    .viewerId(viewerId)
+                    .viewerRole(viewerRole)
+                    .viewedAt(java.time.LocalDateTime.now())
+                    .build());
+        } catch (Exception e) {
+            // fire-and-forget: view tracking must not break the main request
+        }
+        return dto;
     }
 
     @Operation(summary = "Get all resumes by user ID")
@@ -207,5 +230,20 @@ public class ResumeController {
     @PostMapping("/reindex")
     public void reindex() {
         service.reindexAll();
+    }
+
+    @Operation(summary = "Export resume as PDF", description = "Generates and downloads a PDF version of the resume.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "PDF file"),
+            @ApiResponse(responseCode = "404", description = "Resume not found")
+    })
+    @GetMapping(value = "/{id}/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportPdf(
+            @Parameter(description = "Resume ID", required = true) @PathVariable Long id) {
+        byte[] pdf = pdfService.generatePdf(id);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"resume-" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 }

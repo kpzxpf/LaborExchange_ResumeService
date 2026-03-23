@@ -1,13 +1,8 @@
 package com.vlz.laborexchange_resumeservice.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -22,24 +17,45 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
-@ToString(exclude = "education")
+@ToString(exclude = {"education", "workExperiences"})
 public class Resume {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private Long userId;
+    private String firstName;
+    private String lastName;
     private String title;
 
     @Column(length = 5000)
     private String summary;
 
     private Integer experienceYears;
+    private String location;
     private String contactEmail;
     private String contactPhone;
 
     @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Education> education;
+
+    @OneToMany(mappedBy = "resume", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<WorkExperience> workExperiences;
+
+    private Integer expectedSalary;
+
+    @Column(name = "portfolio_url")
+    private String portfolioUrl;
+
+    @ElementCollection
+    @CollectionTable(name = "resume_languages", joinColumns = @JoinColumn(name = "resume_id"))
+    @Column(name = "language")
+    private Set<String> languages;
+
+    @ElementCollection
+    @CollectionTable(name = "resume_certifications", joinColumns = @JoinColumn(name = "resume_id"))
+    @Column(name = "certification")
+    private Set<String> certifications;
 
     @ElementCollection
     @CollectionTable(name = "resume_skills", joinColumns = @JoinColumn(name = "resume_id"))

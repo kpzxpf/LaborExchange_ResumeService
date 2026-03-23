@@ -4,11 +4,14 @@ server:
 spring:
   application:
     name: resume-service
+  profiles:
+    active: local
 
   kafka:
     bootstrap-servers: localhost:9092
     topics:
       indexing-resume: indexing-resume
+      resume-views: resume-views
 
   datasource:
     url: jdbc:postgresql://localhost:5436/resumedb
@@ -27,7 +30,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -127,12 +130,16 @@ resilience4j:
         baseConfig: default
 
 
-kafka:
-  bootstrap-servers: localhost:9092
-
-clients:
-  user-service:
-    url: http://localhost:8082
+ai:
+  provider: ${AI_PROVIDER:anthropic}
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY:}
+    model: claude-opus-4-6
+    max-tokens: 2048
+  groq:
+    api-key: ${GROQ_API_KEY:}
+    model: llama-3.3-70b-versatile
+    max-tokens: 2048
 
 management:
   endpoints:
@@ -146,4 +153,10 @@ management:
     export:
       prometheus:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
 

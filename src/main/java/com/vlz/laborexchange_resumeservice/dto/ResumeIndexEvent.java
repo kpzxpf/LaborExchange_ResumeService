@@ -16,6 +16,8 @@ public class ResumeIndexEvent {
     private String title;
     private String summary;
     private Integer experienceYears;
+    private Integer expectedSalary;
+    private String location;
     private Set<String> skills;
     private Set<String> institutions;
 }

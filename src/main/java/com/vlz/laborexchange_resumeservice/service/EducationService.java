@@ -6,7 +6,6 @@ import com.vlz.laborexchange_resumeservice.repository.EducationRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,11 @@ public class EducationService {
                 .resume(resumeService.getById(educationDto.getResumeId()))
                 .build();
 
-        return educationRepository.save(education);
+        Education saved = educationRepository.save(education);
+
+        log.info("Education created: id={} resumeId={}", saved.getId(), educationDto.getResumeId());
+
+        return saved;
     }
 
     @Transactional
@@ -49,22 +52,29 @@ public class EducationService {
         existing.setStartYear(educationDto.getStartYear());
         existing.setEndYear(educationDto.getEndYear());
 
-        return educationRepository.save(existing);
+        Education saved = educationRepository.save(existing);
+
+        log.info("Education updated: id={}", id);
+
+        return saved;
     }
 
     @Transactional
     public void delete(Long id) {
         if (!educationRepository.existsById(id)) {
-            throw new EntityNotFoundException("Cannot delete. Education not found: " + id);
+            throw new EntityNotFoundException("Education not found: " + id);
         }
+
         educationRepository.deleteById(id);
+
+        log.info("Education deleted: id={}", id);
     }
 
     @Transactional(readOnly = true)
     public Education getEducationById(Long id) {
         return educationRepository.findById(id).orElseThrow(() -> {
-            log.info("education not found id {}", id);
-            return new EntityNotFoundException("education not found id " + id);
+            log.error("Education not found: id={}", id);
+            return new EntityNotFoundException("Education not found: " + id);
         });
     }
 }

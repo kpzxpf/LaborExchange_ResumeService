@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.vlz.laborexchange_resumeservice.dto.ResumeDto;
 import com.vlz.laborexchange_resumeservice.entity.Resume;
 import com.vlz.laborexchange_resumeservice.exception.InsufficientPermissionsException;
+import com.vlz.laborexchange_resumeservice.service.ContentModerationService;
 import com.vlz.laborexchange_resumeservice.producer.ResumeIndexProducer;
 import com.vlz.laborexchange_resumeservice.repository.ResumeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,8 +19,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeServiceTest {
@@ -32,6 +37,11 @@ class ResumeServiceTest {
     private ResumeIndexProducer resumeIndexProducer;
     @Mock
     private SkillRetryClient skillRetryClient;
+    @Mock
+    private TransactionTemplate transactionTemplate;
+
+    @Mock
+    private ContentModerationService contentModerationService;
 
     @InjectMocks
     private ResumeService resumeService;
@@ -43,6 +53,11 @@ class ResumeServiceTest {
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(resumeService, "needRoleForCreate", REQUIRED_ROLE);
+        // TransactionTemplate.execute() must run the callback inline in unit tests
+        lenient().when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
+            TransactionCallback<?> callback = invocation.getArgument(0);
+            return callback.doInTransaction(null);
+        });
     }
 
     @Nested
@@ -54,6 +69,7 @@ class ResumeServiceTest {
             Resume existing = Resume.builder().id(RESUME_ID).userId(USER_ID).build();
             ResumeDto dto = ResumeDto.builder().id(RESUME_ID).title("New Title").build();
 
+            when(skillRetryClient.getNameSkillsByIds(any())).thenReturn(Set.of());
             when(repository.findById(RESUME_ID)).thenReturn(Optional.of(existing));
             when(repository.save(any(Resume.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -69,6 +85,7 @@ class ResumeServiceTest {
             Resume existing = Resume.builder().id(RESUME_ID).userId(USER_ID).build();
             ResumeDto dto = ResumeDto.builder().id(RESUME_ID).build();
 
+            when(skillRetryClient.getNameSkillsByIds(any())).thenReturn(Set.of());
             when(repository.findById(RESUME_ID)).thenReturn(Optional.of(existing));
 
             assertThrows(InsufficientPermissionsException.class, () -> resumeService.update(dto, 999L));

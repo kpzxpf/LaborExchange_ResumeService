@@ -59,8 +59,15 @@ dependencies {
     // OpenAPI
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
+    // PDF export
+    implementation("com.github.librepdf:openpdf:1.3.30")
+
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
+
+    // Distributed Tracing
+    implementation("io.micrometer:micrometer-tracing-bridge-brave")
+    implementation("io.zipkin.reporter2:zipkin-reporter-brave")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
