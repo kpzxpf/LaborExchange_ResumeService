@@ -56,17 +56,19 @@ public class ResumeController {
             @Parameter(description = "Viewer user ID from Gateway") @RequestHeader(value = "X-User-Id", required = false) Long viewerId,
             @Parameter(description = "Viewer role from Gateway") @RequestHeader(value = "X-User-Role", required = false) String viewerRole) {
         ResumeDto dto = mapper.toDto(service.getById(id));
-        try {
-            viewProducer.send(ResumeViewEvent.builder()
-                    .resumeId(id)
-                    .resumeTitle(dto.getTitle())
-                    .ownerId(dto.getUserId())
-                    .viewerId(viewerId)
-                    .viewerRole(viewerRole)
-                    .viewedAt(java.time.LocalDateTime.now())
-                    .build());
-        } catch (Exception e) {
-            // fire-and-forget: view tracking must not break the main request
+        if (viewerId == null || !viewerId.equals(dto.getUserId())) {
+            try {
+                viewProducer.send(ResumeViewEvent.builder()
+                        .resumeId(id)
+                        .resumeTitle(dto.getTitle())
+                        .ownerId(dto.getUserId())
+                        .viewerId(viewerId)
+                        .viewerRole(viewerRole)
+                        .viewedAt(java.time.LocalDateTime.now())
+                        .build());
+            } catch (Exception e) {
+                // fire-and-forget: view tracking must not break the main request
+            }
         }
         return dto;
     }
